@@ -1,0 +1,9 @@
+version: '3.9'
+
+services:
+  pipisya-telegram-bot:
+    build: .
+    image: pipisya-telegram-bot-image
+    restart: always
+    volumes:
+      - ./app_data/db:/app/data
