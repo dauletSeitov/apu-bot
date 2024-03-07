@@ -52,7 +52,7 @@ public class DickService {
 
     @SneakyThrows
     public void topDick(Message message) {
-        List<User> users = userRepository.findAll(Sort.by("length"));
+        List<User> users = userRepository.findAll(Sort.by("length").descending());
         StringBuilder sb = new StringBuilder("Топ 10 игроков\n\n");
         for (int i = 0; i < users.size(); i++) {
             User user = users.get(i);
@@ -67,9 +67,8 @@ public class DickService {
     @SneakyThrows
     public void dickPlay(Message message) {
 
-        User user = userRepository.findById(message.getChat().getId()).orElseGet(() -> {
+        User user = userRepository.findById(message.getFrom().getId()).orElseGet(() -> {
             User newUser = new User();
-            newUser.setChatId(message.getChat().getId());
             newUser.setUserId(message.getFrom().getId());
             newUser.setLength(0);
             newUser.setLastPlayedTime(LocalDate.MIN);
@@ -97,10 +96,10 @@ public class DickService {
             response = String.format(alreadyPlayedTemplate, user.getName(), user.getLength());
         }
 
-        List<User> users = userRepository.findAll(Sort.by("length"));
+        List<User> users = userRepository.findAll(Sort.by("length").descending());
         for (int i = 0; i < users.size(); i++) {
             User item = users.get(i);
-            if (item.getChatId().equals(message.getChat().getId())) {
+            if (item.getUserId().equals(message.getFrom().getId())) {
                 response += String.format(youAreOnPlace, i + 1);
                 break;
             }

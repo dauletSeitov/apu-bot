@@ -3,8 +3,6 @@ package pipisya.bot.entity;
 import lombok.Data;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.time.LocalDate;
 
@@ -13,7 +11,6 @@ import java.time.LocalDate;
 public class User {
 
     @Id
-    private Long chatId;
     private Long userId;
     private Integer length;
     private LocalDate lastPlayedTime;
