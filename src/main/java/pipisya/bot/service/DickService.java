@@ -1,5 +1,6 @@
 package pipisya.bot.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,8 +21,13 @@ public class DickService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private SettingService settingService;
     @Autowired
     private TelegramBotOutput botOutput;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Value("${bot.increase.length}")
     int increaseLength;
@@ -77,7 +83,7 @@ public class DickService {
             return newUser;
         });
         String response;
-        if (user.getLastPlayedTime().isBefore(LocalDate.now())) {
+        if (user.getLastPlayedTime().isBefore(LocalDate.now()) || !settingService.getBooleanValue(SettingService.CHECK_ALREADY_PLAYED)) {
             int length = 0;
             if (increase()) {
                 int random = random(1, increaseLength);
@@ -142,5 +148,34 @@ public class DickService {
         }
         System.out.println("t = " + t);
         System.out.println("f = " + f);
+    }
+
+    @SneakyThrows
+    public void getAll(Message message) {
+        List<User> users = userRepository.findAll();
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(message.getChat().getId());
+        sendMessage.setText(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(users));
+        botOutput.execute(sendMessage);
+    }
+
+    @SneakyThrows
+    public void save(Message message) {
+        String text = message.getText();
+        text = text.substring(text.indexOf("{"));
+        User user = objectMapper.readValue(text, User.class);
+        userRepository.save(user);
+    }
+
+    @SneakyThrows
+    public void delete(Message message) {
+        String text = message.getText();
+        String[] split = text.split(" ");
+        userRepository.deleteById(Long.valueOf(split[1]));
+    }
+
+    public void setCheckAlreadyPlayed() {
+        boolean booleanValue = settingService.getBooleanValue(SettingService.CHECK_ALREADY_PLAYED);
+        settingService.setBooleanValue(SettingService.CHECK_ALREADY_PLAYED, !booleanValue);
     }
 }
